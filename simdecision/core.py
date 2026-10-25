@@ -9,7 +9,7 @@ import xml.etree.ElementTree as ET
 HERE = os.path.dirname(os.path.abspath(__file__))
 ADB = os.path.join(os.environ.get("ANDROID_HOME", "/opt/homebrew/share/android-commandlinetools"),
                    "platform-tools", "adb")
-PLATFORM, PKG, PKGS_OK = "phone", "", set()  # bound per run by the Android driver from simdecision.yaml
+SERIAL, PLATFORM, PKG, PKGS_OK = None, "phone", "", set()  # bound per run by the Android driver from simdecision.yaml
 KEYS = {"up": 19, "down": 20, "left": 21, "right": 22, "select": 23, "back": 4}
 CLEF_USD_PER_TOKEN = 0.24 / 1_000_000
 
@@ -60,6 +60,13 @@ def label_of(node):
 
 
 def snapshot():
+    from . import snapserver  # fast path: persistent on-device helper (~ms); falls back to uiautomator (~2 s)
+    fast = snapserver.dump(ADB, SERIAL)
+    if fast:
+        try:
+            return ET.fromstring(fast[fast.find("<?xml"): fast.rfind("</hierarchy>") + len("</hierarchy>")])
+        except ET.ParseError:
+            pass
     for _ in range(3):
         try:
             r = adb("exec-out", "uiautomator", "dump", "/dev/tty", timeout=15)

@@ -53,7 +53,8 @@ scenario YAML ──> per step:  observe (accessibility tree -> compact text + i
 - **Decision models:** OpenAI Decisions or Cloudflare Workers AI ("Clef"). Both are multimodal; a screenshot is attached
   only when the text tree cannot place the goal (or the screen has no tree, e.g. a video player). With both configured, a
   failed call (quota, budget, HTTP error) retries on the other provider.
-- **Drivers:** Android emulators through `adb` + `uiautomator`; iOS and tvOS simulators through a small XCUITest bridge
+- **Drivers:** Android emulators through `adb` and a small persistent on-device snapshot helper
+  (`simdecision/android_snap/`, built from source on first use, falls back to `uiautomator dump`); iOS and tvOS simulators through a small XCUITest bridge
   (`simdecision/bridge/`) that drives an *installed* app by bundle id: no changes to the app under test.
 - **Memory:** routes per scenario step, and a per-platform screen graph (nodes = fuzzy screen signatures, edges = verified
   taps; shared chrome such as a tab bar is inferred and verified by arrival).
@@ -107,24 +108,30 @@ The full guide is what the MCP `schema` tool returns (`simdecision/scenario.py`)
 
 ## Measured so far
 
-Examples on stock Settings apps, OpenAI Decisions (`gpt-6-luna`, $0.10 per million input tokens), one run each, 2026-10-25:
+Examples on stock Settings apps, OpenAI Decisions (`gpt-6-luna`, $0.10 per million input tokens), fresh runs (no cached
+routes), one run each, 2026-10-25:
 
 | Scenario | Platform | Result | Time | Model tokens | Cost |
 |---|---|---|---|---|---|
-| settings-display | Android phone | PASS (first run) | 26 s | 1,490 | $0.00015 |
-| settings-display | Android phone | PASS (cached route) | 18 s | 412 | $0.00004 |
-| settings-search (type + open result) | Android phone | PASS | 90 s | 2,845 | $0.00028 |
+| settings-display | Android phone | PASS | 5 s | 1,491 | $0.00015 |
+| settings-search (type + open result) | Android phone | PASS | 10 s | 3,210 | $0.00032 |
+| settings-about | Android phone | PASS | 6 s | 2,908 | $0.00029 |
 | settings-about | iPhone (iOS 26 sim) | PASS | 16 s | 3,421 | $0.00034 |
 
-On the production app it came from (3 navigations per run): Android phone 94 s → about 40 s and iPhone 30 s → about 18 s
-after the speed work; the screen graph cut model tokens 88% when different goals reused known screens.
+The Android snapshot helper is most of that: with `uiautomator dump` instead (`SIMDECISION_FAST_SNAPSHOT=0`) the same
+phone runs took 28 s, 86 s and BLOCKED (the About screen never goes idle, so `uiautomator` gives up after 124 s). A screen
+read went from about 2.2 s to 0.02–0.05 s.
+
+On the production app it came from (3 navigations per run): Android phone 94 s → 13 s and iPhone 30 s → about 18 s; the
+screen graph cut model tokens 88% when different goals reused known screens.
 
 These are **not** comparable to AndroidWorld numbers (harder, open-ended tasks); an AndroidWorld run is on the roadmap.
 
 ## Limits (read these)
 
-- **Android speed is bounded by `uiautomator dump` (about 2.2 s per snapshot, far worse when the host is short of memory).**
-  A persistent on-device snapshot helper is the next speed step.
+- **Android allows one UiAutomation client per device.** While the snapshot helper runs, other tools' `uiautomator dump`
+  on that emulator fails; the helper stops at the end of every run and after 60 s without use. Building it needs the
+  Android SDK (`platforms/*/android.jar`, `build-tools/*/d8`) and a JDK.
 - **Scripted goals, not open-ended tasks.** The authoring agent breaks intent into steps; there is no runtime planner yet,
   so "do this multi-app chore" style tasks are out of scope for now.
 - The covered-target check exists on Android only and has been verified on synthetic trees, not yet on a live overlay.
@@ -135,7 +142,7 @@ These are **not** comparable to AndroidWorld numbers (harder, open-ended tasks);
 ## Development
 
 ```bash
-python -m unittest discover -s tests      # offline: no device, no model (35 tests)
+python -m unittest discover -s tests      # offline: no device, no model (39 tests)
 ```
 
 Device runs are manual: `simdecision run ...` against a running emulator/simulator.

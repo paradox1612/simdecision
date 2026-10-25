@@ -312,7 +312,12 @@ def run_scenario(sc, platform, replay=True, drv=None):
     run_id = time.strftime("%y%m%d-%H%M%S") + f"-{sc.id}-{platform}"
     try:
         with device_lock(platform, f"{sc.id} [{platform}]"):
-            return _run_locked(sc, platform, replay, drv)
+            try:
+                return _run_locked(sc, platform, replay, drv)
+            finally:
+                if platform in ("phone", "tv"):
+                    from . import snapserver
+                    snapserver.stop_all(tsim.ADB)  # free the device's single UiAutomation slot for other tools
     except DeviceBusy as e:
         rep = RunReport(run_id, sc.id, platform, tsim.PROVIDER, time.strftime("%F %T"))
         rep.steps.append(StepResult("-", "device lane", "ERROR", detail=str(e)))

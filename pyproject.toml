@@ -30,4 +30,4 @@ Homepage = "https://github.com/paradox1612/simdecision"
 packages = ["simdecision", "simdecision.fixture_servers"]
 
 [tool.setuptools.package-data]
-simdecision = ["bridge/*.swift", "bridge/*.yml", "bridge/*.sh", "bridge/Host/*"]
+simdecision = ["bridge/*.swift", "bridge/*.yml", "bridge/*.sh", "bridge/Host/*", "android_snap/*.java", "android_snap/*.sh"]

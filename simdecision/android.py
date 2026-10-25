@@ -1,6 +1,6 @@
 """Android driver (phone + TV emulators): every action the runtime can take on a device lives here.
 
-Thin and deterministic - wraps tsim's adb/uiautomator helpers. Never drives a physical device. The decision
+Thin and deterministic - wraps core's adb helpers and snapshots (snapserver fast path, uiautomator fallback). Never drives a physical device. The decision
 model never sees this layer; it only sees the compact screen text and the option list built from it.
 """
 import os, re, subprocess, sys, time
