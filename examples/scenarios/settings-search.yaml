@@ -1,0 +1,10 @@
+scenario: settings-search
+title: Search the Android Settings app and open a result
+platforms: [phone]
+inputs: {query: "Bluetooth"}
+steps:
+  - open the settings search
+  - type $query into the search field
+  - open the Bluetooth result
+  - expect:
+      - ui_has: Bluetooth

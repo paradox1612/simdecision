@@ -1,0 +1,12 @@
+.env
+.env.*
+!.env.example
+.simdecision/
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+.venv/
+simdecision/bridge/QABridge.xcodeproj/
+.DS_Store

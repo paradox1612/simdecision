@@ -1,0 +1,9 @@
+scenario: settings-about
+title: Reach the About screen in the OS Settings app, two levels deep
+platforms: [ios, phone]
+steps:
+  - {id: general, goal: "open General", only: [ios]}
+  - open the About screen
+  - expect:
+      - app_foreground: true
+      - {judge: "The screen shows information about this device, such as its name, model or software version"}

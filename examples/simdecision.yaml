@@ -1,0 +1,13 @@
+# Example project config. Everything here is optional: with no file at all, simdecision drives each OS's
+# built-in Settings app on whatever emulator/simulator is running.
+app:
+  phone:
+    package: com.android.settings
+    activity: com.android.settings.Settings
+    also: [com.google.android.settings.intelligence]   # Settings search runs in its own package
+    # avd: Pixel_8_API_36                             # boot this AVD in `simdecision prepare phone`
+  ios:
+    bundle: com.apple.Preferences
+    process: Preferences
+    # udid: <simulator udid>                          # pin a simulator when several are booted
+state_dir: .simdecision

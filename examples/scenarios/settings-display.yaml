@@ -1,0 +1,8 @@
+scenario: settings-display
+title: Open the display settings in the OS Settings app (runs on a stock emulator/simulator, nothing to install)
+platforms: [phone]   # the iOS simulator's Settings app has no Display screen
+steps:
+  - open the display settings
+  - expect:
+      - ui_has: Brightness
+      - app_foreground: true
