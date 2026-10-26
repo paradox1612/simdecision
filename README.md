@@ -61,11 +61,14 @@ scenario YAML ──> per step:  observe (accessibility tree -> compact text + i
 
 ## Quick start
 
-Requirements: macOS, Python 3.10+, a running Android emulator and/or iOS simulator. For iOS/tvOS: Xcode and
-`brew install xcodegen`. A decision-model key (see `.env.example`).
+Requirements: macOS, Python 3.10+ (easiest via [uv](https://docs.astral.sh/uv/): `brew install uv`), a running Android
+emulator and/or iOS simulator. Android: the SDK with platform-tools, build-tools and a JDK (Android Studio installs all
+three). iOS/tvOS: Xcode and `brew install xcodegen`. A decision-model key (see `.env.example`).
 
 ```bash
-pip install -e .                 # or: uv pip install -e .
+git clone https://github.com/paradox1612/simdecision && cd simdecision
+uv venv --python 3.12 && uv pip install -e .     # macOS's built-in python3 is 3.9: too old (needs 3.10+)
+source .venv/bin/activate
 cp .env.example .env             # add OPENAI_API_KEY (or the Cloudflare pair)
 simdecision prepare phone        # checks the emulator and the app
 simdecision prepare ios          # also builds the XCUITest bridge (~1 min, once)
